@@ -42,6 +42,14 @@
           <button class="export" @click="exportReport">导出规划报告（PNG）</button>
         </div>
         <div class="card empty" v-else>完成对话后，这里会展示你的收益曲线</div>
+
+        <div class="card" v-if="market">
+          <h3>行情基准参数</h3>
+          <div v-for="(v, k) in market" :key="k" class="market-row">
+            <div><b>{{ k }}</b><span class="src">{{ v.source }}</span></div>
+            <div>年化 {{ (v.annualReturn * 100).toFixed(1) }}% · 波动 {{ (v.volatility * 100).toFixed(1) }}%</div>
+          </div>
+        </div>
       </section>
     </div>
   </div>
@@ -58,6 +66,7 @@ const input = ref('')
 const thinking = ref(false)
 const profile = ref({})
 const plan = ref(null)
+const market = ref(null)
 const msgBox = ref()
 const chartRef = ref()
 let chart = null
@@ -140,7 +149,7 @@ const scroll = async () => {
   if (msgBox.value) msgBox.value.scrollTop = msgBox.value.scrollHeight
 }
 
-onMounted(scroll)
+onMounted(async () => { scroll(); market.value = (await axios.get('/api/market/params')).data })
 </script>
 
 <style>
@@ -174,4 +183,7 @@ h1 { font-size: 20px; }
 .alloc { margin-top: 10px; }
 .pill { display: inline-block; background: #eff6ff; color: #2563eb; border-radius: 20px; padding: 3px 10px; font-size: 12px; margin-right: 6px; }
 .export { margin-top: 12px; width: 100%; padding: 10px; border: 1px solid #2563eb; color: #2563eb; background: #fff; border-radius: 8px; cursor: pointer; }
+.market-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+.market-row:last-child { border-bottom: none; }
+.src { display: block; font-size: 11px; color: #9ca3af; }
 </style>
