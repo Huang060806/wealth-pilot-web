@@ -35,10 +35,28 @@
             蒙特卡洛 {{ plan.mcRuns }} 次模拟：中位数 <b>{{ plan.mcMedian }}</b> 万 ·
             较差（10%）{{ plan.mcP10 }} 万 · 较好（90%）{{ plan.mcP90 }} 万
           </div>
-          <div class="alloc">
-            建议配置：
-            <span v-for="(v, k) in plan.allocation" :key="k" class="pill">{{ k }} {{ Math.round(v * 100) }}%</span>
+          <h3>逐资产收益分析</h3>
+          <table class="asset-table">
+            <thead><tr><th>资产</th><th>现在(万)</th><th>{{ planYears }}年后(万)</th><th>年化</th></tr></thead>
+            <tbody>
+              <tr v-for="l in plan.assetLines" :key="l.name">
+                <td>{{ l.name }}<div class="src">{{ l.note }}</div></td>
+                <td>{{ l.now }}</td>
+                <td :style="{ color: l.terminal < 0 ? '#dc2626' : '#16a34a' }">{{ l.terminal }}</td>
+                <td>{{ (l.annualReturn * 100).toFixed(1) }}%</td>
+              </tr>
+            </tbody>
+          </table>
+          <h3 style="margin-top:14px">配置对比</h3>
+          <div v-for="k in ['股票','债券','现金']" :key="k" class="alloc-bar">
+            <span class="alloc-name">{{ k }}</span>
+            <div class="bars">
+              <div class="bar current" :style="{ width: (plan.currentAllocation?.[k] || 0) * 100 + '%' }"></div>
+              <div class="bar target" :style="{ width: (plan.allocation?.[k] || 0) * 100 + '%' }"></div>
+            </div>
+            <span class="alloc-num">{{ Math.round((plan.currentAllocation?.[k] || 0) * 100) }}% → {{ Math.round((plan.allocation?.[k] || 0) * 100) }}%</span>
           </div>
+          <div class="legend"><span class="dot current"></span>当前 <span class="dot target"></span>建议</div>
           <button class="export" @click="exportReport">导出规划报告（PNG）</button>
         </div>
         <div class="card empty" v-else>完成对话后，这里会展示你的收益曲线</div>
@@ -185,5 +203,18 @@ h1 { font-size: 20px; }
 .export { margin-top: 12px; width: 100%; padding: 10px; border: 1px solid #2563eb; color: #2563eb; background: #fff; border-radius: 8px; cursor: pointer; }
 .market-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
 .market-row:last-child { border-bottom: none; }
+.asset-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.asset-table th { text-align: left; color: #6b7280; font-weight: normal; padding: 4px 6px; border-bottom: 1px solid #eee; }
+.asset-table td { padding: 8px 6px; border-bottom: 1px solid #f3f4f6; }
+.alloc-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 13px; }
+.alloc-name { width: 34px; }
+.bars { flex: 1; }
+.bar { height: 8px; border-radius: 4px; margin: 2px 0; transition: width .5s; }
+.bar.current { background: #d1d5db; }
+.bar.target { background: #2563eb; }
+.alloc-num { width: 84px; text-align: right; color: #6b7280; }
+.legend { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 4px; margin: 0 4px 0 10px; }
+.dot.current { background: #d1d5db; } .dot.target { background: #2563eb; }
 .src { display: block; font-size: 11px; color: #9ca3af; }
 </style>
